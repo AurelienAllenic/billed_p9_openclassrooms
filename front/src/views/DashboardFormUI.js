@@ -44,15 +44,15 @@ export default (bill) => {
       </div>
       <div class="row">
         <div class="col-sm">
-          <label for="amount-dashboard" class="bold-label">Montant TTC </label>
+          <label for="amount" class="bold-label">Montant TTC </label>
           <div class='input-field input-flex' id="amount">
             <span data-testid="amount">${bill.amount}</span>
             <span> ${euroIcon} </span>
           </div>
         </div>
         <div class="col-sm">
-          <label for="vat-dashboard" class="bold-label">TVA</label>
-          <div id='vat-flex-container' id="vat-dashboard">
+          <label for="vat" class="bold-label">TVA</label>
+          <div id='vat-flex-container' id="vat">
             <div class='input-field input-flex vat-flex'>
               <span>${bill.vat}</span>
               <span> ${euroIcon} </span>

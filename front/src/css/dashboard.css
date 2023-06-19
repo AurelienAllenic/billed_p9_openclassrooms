@@ -2,7 +2,11 @@
   display: flex;
   justify-content: space-between;
 }
-
+/* Added this style for dashboard color*/
+.bill-card.selected {
+  background-color: black;
+}
+/**/
 .dashboard-right-container {
   position: absolute;
   left: 530px;
