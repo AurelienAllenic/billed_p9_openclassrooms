@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="1"
+            failures="0"
+            tests="0">
+
+  <testsuite name="dashboard"
+    errors="1" failures="0" hostname="" id="" package="dashboard" skipped="1"
+    tests="0" time="0.001000" timestamp="">
+  
+
+  
+    <system-err>
+      
+┌───────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                               │
+│   Unable to create the ChromeDriver process: The specified executable path does not exist:    │
+│   ./node_modules/chromedriver/lib/chromedriver/chromedriver                                   │
+│   ; verify if webdriver is configured correctly; using:                                       │
+│   {                                                                                           │
+│   start_process: true,                                                                        │
+│   server_path: &#39;./node_modules/chromedriver/lib/chromedriver/chromedriver&#39;,                   │
+│   port: 9515,                                                                                 │
+│   host: &#39;localhost&#39;,                                                                          │
+│   ssl: false,                                                                                 │
+│   default_path_prefix: &#39;&#39;,                                                                    │
+│   proxy: &#39;undefined&#39;,                                                                         │
+│   cli_args: {}                                                                                │
+│   }                                                                                           │
+│                                                                                               │
+│                                                                                               │
+│                                                                                               │
+└───────────────────────────────────────────────────────────────────────────────────────────────┘
+
+    </system-err>
+  
+
+    
+    <error message="Unable to create the ChromeDriver process: The specified executable path does not exist: ./node_modules/chromedriver/lib/chromedriver/chromedriver"><![CDATA[
+      Error: Unable to create the ChromeDriver process: The specified executable path does not exist: ./node_modules/chromedriver/lib/chromedriver/chromedriver
+    at new DriverService.Builder (C:\Users\marti\Desktop\workspace\Openclassrooms\bill_app\front\node_modules\selenium-webdriver\remote\index.js:318:13)
+    at new ServiceBuilder (C:\Users\marti\Desktop\workspace\Openclassrooms\bill_app\front\node_modules\selenium-webdriver\chromium.js:203:5)
+    at new ServiceBuilder (C:\Users\marti\Desktop\workspace\Openclassrooms\bill_app\front\node_modules\selenium-webdriver\chrome.js:183:5)
+    at ChromeServiceBuilder.createService (C:\Users\marti\Desktop\workspace\Openclassrooms\bill_app\front\node_modules\nightwatch\lib\transport\selenium-webdriver\service-builders\chrome.js:35:20)
+    at ChromeServiceBuilder.init (C:\Users\marti\Desktop\workspace\Openclassrooms\bill_app\front\node_modules\nightwatch\lib\transport\selenium-webdriver\service-builders\base-service.js:272:18)
+    at ChromeDriver.createDriverService (C:\Users\marti\Desktop\workspace\Openclassrooms\bill_app\front\node_modules\nightwatch\lib\transport\selenium-webdriver\index.js:201:88)
+    at ChromeDriver.createSession (C:\Users\marti\Desktop\workspace\Openclassrooms\bill_app\front\node_modules\nightwatch\lib\transport\selenium-webdriver\index.js:284:18)
+      ]]></error>  
+
+  
+    
+    <testcase
+      name="Search Nightwatch.js and check results" classname="dashboard">
+      <skipped />
+    </testcase>
+    
+  
+  </testsuite>
+</testsuites>

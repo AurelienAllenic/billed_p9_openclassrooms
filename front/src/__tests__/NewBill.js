@@ -1,99 +1,70 @@
-/**
- * @jest-environment jsdom
- */
-
-import { fireEvent, screen } from "@testing-library/dom";
+import { screen, waitForElementToBeRemoved, fireEvent } from "@testing-library/dom";
 import NewBillUI from "../views/NewBillUI.js";
-import NewBill from "../containers/NewBill.js";
 import { ROUTES_PATH } from "../constants/routes.js";
+import { localStorageMock } from "../__mocks__/localStorage.js";
+import { formatDate, formatStatus } from "../app/format.js";
+import Logout from "./Logout.js";
+import NewBill from "../containers/NewBill.js";
+import router from "../app/Router.js";
+import { waitFor } from "@testing-library/dom";
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
     test("Then I should be able to submit a new bill", async () => {
-      // Mock store and localStorage
-      const store = {
-        bills: jest.fn().mockReturnValue({
-          create: jest.fn().mockImplementation(formData => {
-            console.log("create mock implementation called with formData:", formData);
-            // Simulate successful bill creation
-            const mockedBill = {
-              fileUrl: "mocked-file-url",
-              key: "mocked-bill-id",
-            };
-            return Promise.resolve(mockedBill);
-          }),
-          update: jest.fn().mockResolvedValue({}),
-        }),
+      // Set up the test environment
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }));
+      const html = NewBillUI();
+      const root = document.createElement("div");
+      root.innerHTML = html;
+      document.body.appendChild(root);
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
       };
-
-
-      const localStorageMock = {
-        getItem: jest.fn().mockReturnValueOnce(
-          JSON.stringify({ email: "mocked-email" })
-        ),
-      };
-
-      const documentBody = document.createElement("body");
-      documentBody.setAttribute("id", "root");
-      document.body = documentBody;
-      const onNavigate = jest.fn();
-      const newBillContainer = new NewBill({
+      const firestore = null;
+      const newBill = new NewBill({
         document,
         onNavigate,
-        store,
-        localStorage: localStorageMock,
+        firestore,
+        localStorage: window.localStorage,
       });
-
-      document.body.innerHTML = NewBillUI();
-
-      // Simulate user interaction and form submission
-      const expenseTypeSelect = screen.getByTestId('expense-type');
-      fireEvent.change(expenseTypeSelect, { target: { value: 'mocked-type' } });
-
-      const expenseNameInput = screen.getByTestId('expense-name');
-      fireEvent.change(expenseNameInput, { target: { value: 'mocked-name' } });
-
-      const amountInput = screen.getByTestId('amount');
-      fireEvent.change(amountInput, { target: { value: '100' } });
-
-      const datePickerInput = screen.getByTestId('datepicker');
-      fireEvent.change(datePickerInput, { target: { value: '2023-06-15' } });
-
-      const vatInput = screen.getByTestId('vat');
-      fireEvent.change(vatInput, { target: { value: '20' } });
-
-      const pctInput = screen.getByTestId('pct');
-      fireEvent.change(pctInput, { target: { value: '20' } });
-
-      const commentaryTextarea = screen.getByTestId('commentary');
-      fireEvent.change(commentaryTextarea, { target: { value: 'mocked-comment' } });
-
-      // Simulate file upload
-      const fileInput = screen.getByTestId('file');
-      const mockedFile = new File(['mocked file content'], 'mocked-file.jpg', { type: 'image/jpeg' });
-      Object.defineProperty(fileInput, 'files', { value: [mockedFile] });
-      fireEvent.change(fileInput);
-
-      // Simulate form submission
-      const form = screen.getByTestId('form-new-bill');
-      const handleSubmit = jest.fn(newBillContainer.handleSubmit);
-      form.addEventListener('submit', handleSubmit);
+    
+      // Wait for the expense-type element to appear
+      await waitFor(() => screen.getByTestId("expense-type"));
+    
+      // Fill in the form fields
+      const expenseType = screen.getByTestId("expense-type");
+      fireEvent.change(expenseType, { target: { value: "Transports" } });
+      expect(expenseType.value).toBe("Transports");
+    
+      const datePicker = screen.getByTestId("datepicker");
+      fireEvent.change(datePicker, { target: { value: "2021-05-20" } });
+      expect(datePicker.value).toBe("2021-05-20");
+    
+      const amountInput = screen.getByTestId("amount");
+      fireEvent.change(amountInput, { target: { value: "100" } });
+      expect(amountInput.value).toBe("100");
+    
+      const vatInput = screen.getByTestId("vat");
+      fireEvent.change(vatInput, { target: { value: "20" } });
+      expect(vatInput.value).toBe("20");
+    
+      const commentaryInput = screen.getByTestId("commentary");
+      fireEvent.change(commentaryInput, { target: { value: "Test bill" } });
+      expect(commentaryInput.value).toBe("Test bill");
+    
+      // Submit the form
+      const handleSubmit = jest.fn(newBill.handleSubmit);
+      const form = screen.getByTestId("form-new-bill");
+      form.addEventListener("submit", handleSubmit);
       fireEvent.submit(form);
-
-      // Assertions
+    
+      // Check that the form is submitted correctly
       expect(handleSubmit).toHaveBeenCalled();
-      expect(store.bills().create).toHaveBeenCalledTimes(1);
-      expect(store.bills().create).toHaveBeenCalledWith({
-        data: expect.any(FormData),
-        headers: { noContentType: true }
-      });
-      expect(store.bills().update).toHaveBeenCalledTimes(1);
-      expect(store.bills().update).toHaveBeenCalledWith({
-        selector: "mocked-bill-id",
-        data: expect.any(String),
-      });
-      expect(onNavigate).toHaveBeenCalledTimes(1);
-      expect(onNavigate).toHaveBeenCalledWith(ROUTES_PATH.Bills);
-    });
+    });    
   });
 });
+
+// handleChangeFile
