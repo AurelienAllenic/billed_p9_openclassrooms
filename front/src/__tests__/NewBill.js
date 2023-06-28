@@ -66,5 +66,111 @@ describe("Given I am connected as an employee", () => {
     });    
   });
 });
-
+/*
 // handleChangeFile
+describe('handleChangeFile', () => {
+  let instance;
+  let store;
+
+  beforeEach(() => {
+    instance = new NewBill();
+    store = {
+      bills: jest.fn(() => ({
+        create: jest.fn(() => ({
+          fileUrl: 'https://example.com/image.jpg',
+          key: '123',
+        })),
+      })),
+    };
+    instance.store = store;
+    instance.document = {
+      querySelector: jest.fn(() => ({
+        files: [{ name: 'test.jpg' }],
+      })),
+    };
+    instance.localStorage = {
+      getItem: jest.fn(() => JSON.stringify({ email: 'test@example.com' })),
+    };
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should upload a valid file', async () => {
+    const event = { preventDefault: jest.fn(), target: { value: 'C:\\fakepath\\test.jpg' } };
+    const formData = new FormData();
+    formData.append('file', { name: 'test.jpg' });
+    formData.append('email', 'test@example.com');
+
+    await instance.handleChangeFile(event);
+
+    expect(store.bills).toHaveBeenCalled();
+    expect(store.bills().create).toHaveBeenCalledWith({
+      data: formData,
+      headers: {
+        noContentType: true,
+      },
+    });
+  });
+
+  it('should not upload an invalid file', async () => {
+    const event = { preventDefault: jest.fn(), target: { value: 'C:\\fakepath\\test.gif' } };
+    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    instance.document.querySelector.mockReturnValueOnce({
+      files: [{ name: 'test.gif' }],
+    });
+
+    await instance.handleChangeFile(event);
+
+    expect(alertSpy).toHaveBeenCalledWith('Invalid file format. Please choose a JPEG, PNG, or JPG file.');
+    expect(store.bills().create).not.toHaveBeenCalled();
+  });
+
+  it('should reset the file input after an invalid file is selected', async () => {
+    const event = { preventDefault: jest.fn(), target: { value: 'C:\\fakepath\\test.gif' } };
+    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    instance.document.querySelector.mockReturnValueOnce({
+      files: [{ name: 'test.gif' }],
+      value: 'C:\\fakepath\\test.gif',
+    });
+
+    await instance.handleChangeFile(event);
+
+    expect(instance.document.querySelector).toHaveBeenCalledWith(`input[data-testid="file"]`);
+    expect(instance.document.querySelector().value).toEqual('');
+  });
+
+  it('should log the file and fileUrl after a successful upload', async () => {
+    const event = { preventDefault: jest.fn(), target: { value: 'C:\\fakepath\\test.jpg' } };
+
+    await instance.handleChangeFile(event);
+
+    expect(console.log).toHaveBeenCalledWith({ name: 'test.jpg' });
+    expect(console.log).toHaveBeenCalledWith('https://example.com/image.jpg');
+  });
+
+  it('should set the billId, fileUrl, and fileName after a successful upload', async () => {
+    const event = { preventDefault: jest.fn(), target: { value: 'C:\\fakepath\\test.jpg' } };
+
+    await instance.handleChangeFile(event);
+
+    expect(instance.billId).toEqual('123');
+    expect(instance.fileUrl).toEqual('https://example.com/image.jpg');
+    expect(instance.fileName).toEqual('test.jpg');
+  });
+
+  it('should catch and log any errors that occur during the upload', async () => {
+    const event = { preventDefault: jest.fn(), target: { value: 'C:\\fakepath\\test.jpg' } };
+    store.bills().create.mockRejectedValueOnce(new Error('Upload failed'));
+    it('should catch and log any errors that occur during the upload', async () => {
+      const event = { preventDefault: jest.fn(), target: { value: 'C:\\fakepath\\test.jpg' } };
+      store.bills().create.mockRejectedValueOnce(new Error('Upload failed'));
+
+      await instance.handleChangeFile(event);
+
+      expect(console.error).toHaveBeenCalledWith(new Error('Upload failed'));
+    });
+});
+})
+*/

@@ -1,18 +1,22 @@
 /**
  * @jest-environment jsdom
  */
-
-import { render, screen, waitFor, fireEvent } from "@testing-library/dom";
+import '@testing-library/jest-dom/extend-expect';
+import { render, screen, waitFor, fireEvent} from "@testing-library/dom";
+import userEvent from '@testing-library/user-event';
 import BillsUI from "../views/BillsUI.js";
 import { bills } from "../fixtures/bills.js";
 import { ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
-import { formatDate, formatStatus } from "../app/format.js";
-import Logout from "./Logout.js";
-import { handleClickNewBill } from "../containers/Bills.js";
 import router from "../app/Router.js";
-import Bill from "../containers/Bills.js";
-import $ from "jquery";
+import Bills from "../containers/Bills.js";
+
+// Add this block of code to mock window.getComputedStyle()
+window.getComputedStyle = jest.fn(() => {
+  return {
+    getPropertyValue: () => { /* mock implementation */ }
+  };
+});
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on Bills Page", () => {
@@ -25,20 +29,20 @@ describe("Given I am connected as an employee", () => {
       const root = document.createElement("div");
       root.setAttribute("id", "root");
       document.body.append(root);
-    
+
       // Navigate to the Bills page
       router();
       window.onNavigate(ROUTES_PATH.Bills);
-    
+
       // Wait for the bills UI to be loaded
       await waitFor(() => screen.getByTestId('icon-window'));
-    
+
       // Get the bill icon in vertical layout
       const windowIcon = screen.getByTestId('icon-window');
 
       // Get the icon message icon in vertical layout
       const iconMail = screen.getByTestId('icon-mail');
-    
+
       // Check that the icon is highlighted
       expect(windowIcon).toHaveClass('active-icon');
       // Check that the message icon is not highlighted
@@ -51,7 +55,6 @@ describe("Given I am connected as an employee", () => {
         .map((a) => a.innerHTML);
       const chrono = (a, b) => new Date(b) - new Date(a);
       const datesSorted = [...dates].sort(chrono);
-      console.log("datesSorted", datesSorted)
       expect(dates.every((date) => datesSorted.includes(date))).toBe(true);
     });
   describe("When I click on the icon-eye", () => {
@@ -81,3 +84,47 @@ describe("Given I am connected as an employee", () => {
     });
   });
 })
+
+// Add this test to navigate to the New Bill page
+describe('When I am on Bills page and I click on the new bill button', () => {
+  test('Then I should navigate to the New Bill page', async () => {
+    // Set up the test environment
+    Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+    window.localStorage.setItem('user', JSON.stringify({
+      type: 'Employee'
+    }));
+    const root = document.createElement("div");
+    root.setAttribute("id", "root");
+    document.body.append(root);
+
+    // Navigate to the Bills page
+    router();
+    window.onNavigate(ROUTES_PATH.Bills);
+
+    // Wait for the bills UI to be loaded
+    await waitFor(() => screen.getByTestId('btn-new-bill'));
+
+    // Get the new bill button
+    const newBillButton = screen.getByTestId('btn-new-bill');
+
+    // Mock the handle click event
+    const handleClickNewBill = jest.fn();
+    newBillButton.addEventListener('click', handleClickNewBill);
+
+    // Click the new bill button
+    fireEvent.click(newBillButton);
+
+    // Wait for the New Bill page to be displayed
+    await waitFor(() => {
+      expect(window.location.hash).toEqual('#employee/bill/new');
+    });
+
+    // Check that the handle click event was called
+    expect(handleClickNewBill).toHaveBeenCalled();
+
+    // Check that the "Envoyer une note de frais" text is in the document
+    expect(screen.getByText('Envoyer une note de frais')).toBeInTheDocument();
+  });
+}); 
+
+// getBills Test //
