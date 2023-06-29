@@ -66,8 +66,13 @@ describe("Given I am connected as an employee", () => {
     });    
   });
 });
-/*
+
+
+
+
 // handleChangeFile
+
+
 describe('handleChangeFile', () => {
   let instance;
   let store;
@@ -75,12 +80,12 @@ describe('handleChangeFile', () => {
   beforeEach(() => {
     instance = new NewBill();
     store = {
-      bills: jest.fn(() => ({
+      bills: jest.fn().mockReturnValue({
         create: jest.fn(() => ({
           fileUrl: 'https://example.com/image.jpg',
           key: '123',
         })),
-      })),
+      }),
     };
     instance.store = store;
     instance.document = {
@@ -102,9 +107,9 @@ describe('handleChangeFile', () => {
     const formData = new FormData();
     formData.append('file', { name: 'test.jpg' });
     formData.append('email', 'test@example.com');
-
-    await instance.handleChangeFile(event);
-
+  
+    await newBill.handleChangeFile(event);
+  
     expect(store.bills).toHaveBeenCalled();
     expect(store.bills().create).toHaveBeenCalledWith({
       data: formData,
@@ -113,6 +118,9 @@ describe('handleChangeFile', () => {
       },
     });
   });
+  
+  
+  
 
   it('should not upload an invalid file', async () => {
     const event = { preventDefault: jest.fn(), target: { value: 'C:\\fakepath\\test.gif' } };
@@ -162,15 +170,18 @@ describe('handleChangeFile', () => {
 
   it('should catch and log any errors that occur during the upload', async () => {
     const event = { preventDefault: jest.fn(), target: { value: 'C:\\fakepath\\test.jpg' } };
-    store.bills().create.mockRejectedValueOnce(new Error('Upload failed'));
-    it('should catch and log any errors that occur during the upload', async () => {
-      const event = { preventDefault: jest.fn(), target: { value: 'C:\\fakepath\\test.jpg' } };
-      store.bills().create.mockRejectedValueOnce(new Error('Upload failed'));
-
-      await instance.handleChangeFile(event);
-
-      expect(console.error).toHaveBeenCalledWith(new Error('Upload failed'));
-    });
-});
+    const createMock = jest.fn().mockRejectedValueOnce(new Error('Upload failed'));
+    const store = {
+      bills: jest.fn().mockReturnValue({
+        create: createMock,
+        update: jest.fn(),
+      }),
+    };
+    instance.store = store;
+  
+    await instance.handleChangeFile(event);
+  
+    expect(createMock).toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith(new Error('Upload failed'));
+  });  
 })
-*/

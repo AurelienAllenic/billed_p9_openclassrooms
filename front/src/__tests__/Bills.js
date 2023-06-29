@@ -128,3 +128,46 @@ describe('When I am on Bills page and I click on the new bill button', () => {
 }); 
 
 // getBills Test //
+import { formatDate, formatStatus } from '../app/format.js';
+
+describe('formatDate', () => {
+  test('should format the date correctly', () => {
+    const dateStr = '2022-05-20';
+    const expected = /^20 Mai\b \d{2}$/; // Updated pattern
+
+    const result = formatDate(dateStr);
+
+    expect(result).toMatch(expected);
+  });
+});
+
+describe('formatStatus', () => {
+  test('should return "En attente" for status "pending"', () => {
+    const status = 'pending';
+    const expected = 'En attente';
+
+    const result = formatStatus(status);
+
+    expect(result).toBe(expected);
+  });
+
+  test('should return "Accepté" for status "accepted"', () => {
+    const status = 'accepted';
+    const expected = 'Accepté';
+
+    const result = formatStatus(status);
+
+    expect(result).toBe(expected);
+  });
+
+  test('should return "Refused" for status "refused"', () => {
+    const status = 'refused';
+    const expected = 'Refused';
+
+    const result = formatStatus(status);
+
+    expect(result).toBe(expected);
+  });
+});
+
+
