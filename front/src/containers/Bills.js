@@ -30,31 +30,44 @@ export default class {
   getBills = () => {
     if (this.store) {
       return this.store
-      .bills()
-      .list()
-      .then(snapshot => {
-        const bills = snapshot
-          .map(doc => {
+        .bills()
+        .list()
+        .then((snapshot) => {
+          const bills = snapshot.map((doc) => {
             try {
+              if(doc.date === null){
+                doc.date= '1970-01-01';
+                const formattedDate = formatDate(doc.date);
+                return {
+                  ...doc,
+                  date: formattedDate,
+                  status: "incomplet",
+                };
+
+              }else{
+                 console.log('Formatting date for:', doc.date);
+              const formattedDate = formatDate(doc.date);
+              console.log("ourformattedDate", formatDate(doc.date))
+              console.log('Formatted date:', formattedDate);
               return {
                 ...doc,
-                date: formatDate(doc.date),
-                status: formatStatus(doc.status)
+                date: formattedDate,
+                status: formatStatus(doc.status),
+              };
               }
-            } catch(e) {
-              // if for some reason, corrupted data was introduced, we manage here failing formatDate function
-              // log the error and return unformatted date in that case
-              console.log(e,'for',doc)
+             
+            } catch (e) {
+              console.log(e, 'for', doc);
               return {
                 ...doc,
-                date: doc.date,
-                status: formatStatus(doc.status)
-              }
+                date: doc.date, // Provide a fallback value here
+                status: formatStatus(doc.status),
+              };
             }
-          })
-          console.log('length', bills.length)
-        return bills
-      })
+          });
+          console.log('length', bills.length);
+          return bills;
+        });
     }
-  }
-}
+  };  
+};  
