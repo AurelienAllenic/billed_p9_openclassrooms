@@ -10,13 +10,68 @@ import { ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import router from "../app/Router.js";
 import Bills from "../containers/Bills.js";
-
+import { formatDate, formatStatus } from '../app/format.js';
+import { expect } from '@jest/globals';
+import YourClass from '../containers/Bills.js';
+import { mockedBills, mockStore } from './mocks.js';
 // Mock window.getComputedStyle()
-window.getComputedStyle = jest.fn(() => {
+/*window.getComputedStyle = jest.fn(() => {
   return {
-    getPropertyValue: () => { /* mock implementation */ }
+    getPropertyValue: () => { /* mock implementation */ /*}
   };
+});*/
+
+/*Error depending on where I put this block*/
+
+describe("When an error occurs on API", () => {
+  let mockStore;
+
+  beforeEach(() => {
+    mockStore = {
+      bills: jest.fn().mockReturnValue(mockedBills),
+    };
+
+    jest.spyOn(mockStore, "bills");
+
+    Object.defineProperty(
+      window,
+      "localStorage",
+      { value: localStorageMock }
+    );
+
+    window.localStorage.setItem(
+      "user",
+      JSON.stringify({
+        type: "employee",
+        email: "employee@test.tld",
+      })
+    );
+
+    const root = document.createElement("div");
+    root.setAttribute("id", "root");
+    document.body.appendChild(root);
+
+    // Pass the `mockStore` object to the `router` function
+    router(mockStore);
+
+    expect(root).toBeInTheDocument();
+  });
+
+   test("fetches bills from an API and fails with 404 message error", async () => {
+
+      mockStore.bills.mockImplementationOnce(() => {
+        return {
+          list : () =>  {
+            return Promise.reject(new Error("Erreur 404"))
+          }
+        }})
+      window.onNavigate(ROUTES_PATH.Bills)
+      await new Promise(process.nextTick);
+      const message = await screen.getByText(/Erreur 404/)
+      expect(message).toBeTruthy()
+    })
 });
+/*_______________________________________________________________________*/
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on the Bills Page", () => {
@@ -50,6 +105,7 @@ describe("Given I am connected as an employee", () => {
       expect(iconMail).not.toHaveClass('active-icon');
     });
 
+
     test("Then the bills should be ordered from earliest to latest", () => {
       document.body.innerHTML = BillsUI({ data: bills });
       const dates = screen
@@ -60,32 +116,49 @@ describe("Given I am connected as an employee", () => {
       expect(dates.every((date) => datesSorted.includes(date))).toBe(true);
     });
 
-    describe("When I click on the icon-eye", () => {
-      test("Then I should be able to see the modal", async () => {
-        // Render the Bills page
-        const html = BillsUI({ data: bills });
-        document.body.innerHTML = html;
-
-        // Get the eye icons
-        const eyeIcons = screen.getAllByTestId('icon-eye');
-
-        // Click the first eye icon
-        fireEvent.click(eyeIcons[0]);
-
-        // Wait for the modal to be displayed
-        await waitFor(() => {
-          expect(document.getElementById('modaleFile')).toBeInTheDocument();
+      test("Then modal should be displayed", () => {
+        const onNavigate = (pathname) => {
+          document.body.innerHTML = ROUTES({ pathname });
+        };
+  
+        Object.defineProperty(window, "localStorage", {
+          value: localStorageMock,
         });
-
-        // Get the modal element by its id
-        const modal = document.getElementById('modaleFile');
-
-        // Check that the modal is displayed
-        expect(modal).toBeInTheDocument();
+        window.localStorage.setItem(
+          "user",
+          JSON.stringify({
+            type: "Employee",
+          })
+        );
+  
+        const billsDashboard = new Bills({
+          document,
+          onNavigate,
+          store: null,
+          bills: bills,
+          localStorage: window.localStorage,
+        });
+  
+        /* Mock fonction JQuery */
+        $.fn.modal = jest.fn();
+  
+        document.body.innerHTML = BillsUI({ data: { bills } });
+  
+        const iconEye = screen.getAllByTestId("btn-new-bill")[0];
+        const handleClickIconEye = jest.fn(
+          billsDashboard.handleClickIconEye(iconEye)
+        );
+  
+        iconEye.addEventListener("click", handleClickIconEye);
+        userEvent.click(iconEye);
+  
+        expect(handleClickIconEye).toHaveBeenCalled();
+        expect($.fn.modal).toHaveBeenCalled();
+        expect(screen.getByTestId("modaleFile")).toBeTruthy();
+        expect(screen.getByTestId("modaleTitle")).toBeTruthy();
       });
     });
-  });
-});
+ 
 
 describe('When I am on the Bills page and I click on the new bill button', () => {
   test('Then I should navigate to the New Bill page', async () => {
@@ -130,15 +203,12 @@ describe('When I am on the Bills page and I click on the new bill button', () =>
 });
 
 // getBills Test //
-import { formatDate, formatStatus } from '../app/format.js';
-import { expect } from '@jest/globals';
+
 
 test('should format the date correctly', () => {
   const dateStr = '2022-05-20';
   const expected = /^20 Mai\. \d{2}$/;
-  console.log("expected +>", expected);
   const result = formatDate(dateStr);
-  console.log("result", result);
   if (result === undefined) {
     expect(result).toBeUndefined();
   } else {
@@ -152,7 +222,6 @@ describe('formatStatus', () => {
     const expected = 'En attente';
 
     const result = formatStatus(status);
-
     expect(result).toBe(expected);
   });
 
@@ -175,13 +244,6 @@ describe('formatStatus', () => {
   });
 });
 
-import YourClass from '../containers/Bills.js';
-
-// Mock the formatDate function
-jest.mock('../app/format.js', () => ({
-  formatStatus: jest.fn(),
-  formatDate: jest.fn()
-}));
 
 describe('YourClass', () => {
   describe('getBills', () => {
@@ -192,10 +254,6 @@ describe('YourClass', () => {
         { id: 2, date: '2022-02-01', status: 'accepted' }
       ];
 
-      // Mock the formatDate function
-      formatDate.mockImplementation(() => 'formatted date');
-      formatStatus.mockImplementation(() => 'formatted status');
-
       // Create an instance of YourClass with the required properties
       const yourClass = new YourClass({
         document: document,
@@ -205,17 +263,110 @@ describe('YourClass', () => {
             list: jest.fn().mockResolvedValue(mockBills)
           })
         },
-        localStorage: localStorage
+        localStorage: localStorage,
+        formatDate: (date) => formatDate(date), // Pass a function that calls formatDate with the provided date
+        formatStatus: (status) => formatStatus(status) // Pass a function that calls formatStatus with the provided status
       });
 
       // Call the getBills function
       const result = await yourClass.getBills();
 
+      // Create the expected result with formatted date and status
+      const expected = [
+        { id: 1, date: "1 Jan. 22", status: formatStatus('pending') },
+        { id: 2, date: "1 Fév. 22", status: formatStatus('accepted') }
+      ];
+
       // Assert the result
-      expect(result).toEqual([
-        { id: 1, date: 'formatted date', status: 'formatted status' },
-        { id: 2, date: 'formatted date', status: 'formatted status' }
-      ]);
+      expect(result).toEqual(expected);
     });
   });
 });
+ });   
+
+
+// test d'intégration GetBills
+ /*
+import store from "../__mocks__/store.js";
+
+const mockedBills = store.bills();
+jest.mock("../app/store.js", () => ({
+  bills: jest.fn(() => mockedBills),
+}));
+
+console.log("TEST =+>", mockedBills);
+
+
+describe("Given I am a user connected as Employee", () => {
+  describe("When I navigate to Dashboard", () => {
+    test("fetches bills from mock API GET", async () => {
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }));
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.append(root)
+      router()
+      window.onNavigate(ROUTES_PATH.Bills)
+      await waitFor(() => screen.getByText("Mes notes de frais"))
+      
+      expect(screen.getByText("Mes notes de frais")).toBeTruthy()
+    })
+  describe("When an error occurs on API", () => {
+    beforeEach(() => {
+      jest.spyOn(mockedBills, "bills")
+      Object.defineProperty(
+          window,
+          'localStorage',
+          { value: localStorageMock }
+      )
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'employee',
+        email: "employee@test.tld"
+      }))
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.appendChild(root)
+      router()
+    })
+  })
+   
+    test("fetches bills from an API and fails with 404 message error", async () => {
+
+      mockedBills.bills.mockImplementationOnce(() => {
+        return {
+          list: () => {
+            return Promise.reject(new Error("Erreur 404"))
+          }
+        }
+      });
+      
+      window.onNavigate(ROUTES_PATH.Bills);
+      
+      const message = await screen.getByText(/Erreur 404/)
+      
+      expect(message).toBeTruthy();
+      
+    })
+  })
+})
+})
+    test("fetches messages from an API and fails with 500 message error", async () => {
+
+      mockStore.bills.mockImplementationOnce(() => {
+        return {
+          list : () =>  {
+            return Promise.reject(new Error("Erreur 500"))
+          }
+        }})
+
+      window.onNavigate(ROUTES_PATH.Dashboard)
+      await new Promise(process.nextTick);
+      const message = await screen.getByText(/Erreur 500/)
+      expect(message).toBeTruthy()
+    })
+  })
+
+  })
+})*/

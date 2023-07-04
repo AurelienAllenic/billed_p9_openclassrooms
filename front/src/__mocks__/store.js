@@ -84,7 +84,7 @@ const mockedBills = {
   },
 }
 
-export default {
+export default{
   bills() {
     return mockedBills
     //return {}
